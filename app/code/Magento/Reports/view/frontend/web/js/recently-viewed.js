@@ -7,9 +7,10 @@
  * @api
  */
 define([
-    'jquery',
-    'jquery/ui'
-], function ($) {
+           'jquery',
+           'jquery/ui',
+           'jquery/jquery-storageapi'
+       ], function ($) {
     'use strict';
 
     $.widget('mage.recentlyViewedProducts', {
@@ -26,7 +27,7 @@ define([
         _create: function () {
             var productHtml = $(this.options.productBlock).html(),
                 productSku = $(this.options.productBlock).data('sku'),
-                products = JSON.parse(window.localStorage.getItem(this.options.localStorageKey)),
+                products = JSON.parse($.localStorage.getItem(this.options.localStorageKey)),
                 productsLength, maximum, showed, index;
 
             if (products) {
@@ -52,7 +53,7 @@ define([
             }
             products.sku.unshift(productSku);
             products.html.unshift(productHtml);
-            window.localStorage.setItem(this.options.localStorageKey, JSON.stringify(products));
+            $.localStorage.setItem(this.options.localStorageKey, JSON.stringify(products));
         }
     });
 
