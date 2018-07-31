@@ -8,7 +8,8 @@ define([
     'mageUtils',
     'Magento_Catalog/js/product/storage/storage-service',
     'Magento_Customer/js/section-config',
-    'jquery'
+    'jquery',
+    'jquery/jquery-storageapi'
 ], function (_, Element, utils, storage, sectionConfig, $) {
     'use strict';
 
@@ -22,9 +23,9 @@ define([
         if (event.target.method.match(/post|put|delete/i)) {
             sections = sectionConfig.getAffectedSections(event.target.action);
 
-            if (sections && window.localStorage) {
+            if (sections && $.localStorage) {
                 _.each(sections, function (section) {
-                    window.localStorage.removeItem(section);
+                    $.localStorage.removeItem(section);
                 });
             }
         }
@@ -192,7 +193,7 @@ define([
          * @param {String} name - storage name
          */
         getLastUpdate: function (name) {
-            return window.localStorage.getItem(this[name].namespace + '_last_update');
+            return $.localStorage.getItem(this[name].namespace + '_last_update');
         },
 
         /**
@@ -201,7 +202,7 @@ define([
          * @param {String} name - storage name
          */
         setLastUpdate: function (name) {
-            window.localStorage.setItem(this[name].namespace + '_last_update', this.getUtcTime());
+            $.localStorage.setItem(this[name].namespace + '_last_update', this.getUtcTime());
         },
 
         /**
