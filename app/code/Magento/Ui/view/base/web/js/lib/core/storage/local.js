@@ -6,12 +6,14 @@ define([
     'underscore',
     'uiRegistry',
     'mageUtils',
-    'uiEvents'
-], function (_, registry, utils, EventsBus) {
+    'uiEvents',
+    'jquery',
+    'jquery/jquery-storageapi'
+], function (_, registry, utils, EventsBus, $) {
     'use strict';
 
     var root = 'appData',
-        localStorage = window.localStorage,
+        localStorage = $.localStorage,
         hasSupport,
         storage;
 
