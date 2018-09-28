@@ -63,8 +63,8 @@ define([
                 }
             ).fail(
                 function (response) {
-                    errorProcessor.process(response);
                     fullScreenLoader.stopLoader();
+                    errorProcessor.process(response);
                 }
             );
         }
