@@ -406,14 +406,16 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * Retrieve Catalog Price Scope
      *
-     * @return int
+     * @return int|null
      */
     public function getPriceScope()
     {
-        return $this->scopeConfig->getValue(
+        $priceScope = $this->scopeConfig->getValue(
             self::XML_PATH_PRICE_SCOPE,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE
         );
+
+        return isset($priceScope) ? (int)$priceScope : null;
     }
 
     /**
