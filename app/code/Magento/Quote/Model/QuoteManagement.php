@@ -510,6 +510,7 @@ class QuoteManagement implements \Magento\Quote\Api\CartManagementInterface
             ]
         );
         try {
+            throw new \Exception('failed');
             $order = $this->orderManagement->place($order);
             $quote->setIsActive(false);
             $this->eventManager->dispatch(
