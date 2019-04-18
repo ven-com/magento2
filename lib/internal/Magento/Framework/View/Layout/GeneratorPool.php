@@ -214,6 +214,7 @@ class GeneratorPool
         list($destination, $siblingName, $isAfter, $alias) = $scheduledStructure->getElementToMove($element);
 
         $parent = $structure->getParentId($element);
+        $structOldJson = json_encode($structure->exportElements());
 
         $childAlias = $structure->getChildAlias($structure->getParentId($element), $element);
         if (!$alias && false === $structure->getChildId($destination, $childAlias)) {
@@ -227,14 +228,15 @@ class GeneratorPool
             $this->logger->warning('Broken reference: ' . $e->getMessage());
 
             try {
-                $structJson     = json_encode($structure->exportElements());
+                $structNewJson     = json_encode($structure->exportElements());
                 $scheduledMoves = [];
                 foreach ($scheduledStructure->getListToMove() as $x) {
                     $scheduledMoves[$x] = $scheduledStructure->getElementToMove($x);
                 }
 
                 $message = "Error on moving element '${element}' from parent '${parent}' to '${destination}'\n" .
-                    "Current structure: $structJson\n" .
+                    "Old structure: $structOldJson\n" .
+                    "New structure: $structNewJson\n" .
                     "Scheduled moves: " . json_encode($scheduledMoves) . "\n" .
                     "Stack trace: " . $e->getTraceAsString();
 
