@@ -21,6 +21,12 @@ class Structure
 
     const GROUPS = 'groups';
 
+    /** @var \Psr\Log\LoggerInterface */
+    private $logger;
+
+    /** @var \Magento\Framework\App\RequestInterface */
+    private $request;
+
     /**
      * @var array
      */
@@ -33,6 +39,9 @@ class Structure
      */
     public function __construct(array $elements = null)
     {
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $this->logger = $objectManager->create('\Psr\Log\LoggerInterface');
+        $this->request = $objectManager->create('\Magento\Framework\App\RequestInterface');
         if (null !== $elements) {
             $this->importElements($elements);
         }
@@ -636,7 +645,24 @@ class Structure
     private function _assertElementExists($elementId)
     {
         if (!isset($this->_elements[$elementId])) {
-            throw new \OutOfBoundsException("No element found with ID '{$elementId}'.");
+            try {
+                throw new \OutOfBoundsException("No element found with ID '{$elementId}'.");
+            } catch (\OutOfBoundsException $e) {
+                try {
+                    $this->logger->error(
+                        (string)$e,
+                        [
+                            'module'     => 'Magento_Framework',
+                            'areaCode'   => $this->state->getAreaCode(),
+                            'requestUri' => $this->request->getRequestUri(),
+                        ]
+                    );
+                } catch (\Throwable $throwable) {
+                    $this->logger->error(sprintf('Something went wrong when trying to add logging. %s', $throwable));
+                } finally {
+                    throw $e;
+                }
+            }
         }
     }
 
