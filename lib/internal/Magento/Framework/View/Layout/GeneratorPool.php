@@ -6,6 +6,7 @@
 namespace Magento\Framework\View\Layout;
 
 use Magento\Framework\View\Layout\Condition\ConditionFactory;
+use Throwable;
 
 /**
  * Pool of generators for structural elements
@@ -211,6 +212,9 @@ class GeneratorPool
         $element
     ) {
         list($destination, $siblingName, $isAfter, $alias) = $scheduledStructure->getElementToMove($element);
+
+        $parent = $structure->getParentId($element);
+
         $childAlias = $structure->getChildAlias($structure->getParentId($element), $element);
         if (!$alias && false === $structure->getChildId($destination, $childAlias)) {
             $alias = $childAlias;
@@ -221,6 +225,23 @@ class GeneratorPool
             $structure->reorderChildElement($destination, $element, $siblingName, $isAfter);
         } catch (\OutOfBoundsException $e) {
             $this->logger->warning('Broken reference: ' . $e->getMessage());
+
+            try {
+                $structJson     = json_encode($structure->exportElements());
+                $scheduledMoves = [];
+                foreach ($scheduledStructure->getListToMove() as $x) {
+                    $scheduledMoves[$x] = $scheduledStructure->getElementToMove($x);
+                }
+
+                $message = "Error on moving element '${element}' from parent '${parent}' to '${destination}'\n" .
+                    "Current structure: $structJson\n" .
+                    "Scheduled moves: " . json_encode($scheduledMoves) . "\n" .
+                    "Stack trace: " . $e->getTraceAsString();
+
+                $this->logger->warning('Broken reference DEBUG: ' . $message);
+            } catch (\Throwable $e) {
+                $this->logger->warning('Broken reference DEBUG EXCEPTION: ' . $e);
+            }
         }
         $scheduledStructure->unsetElementFromBrokenParentList($element);
         return $this;
