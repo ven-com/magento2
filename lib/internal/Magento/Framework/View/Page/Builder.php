@@ -81,23 +81,25 @@ class Builder extends View\Layout\Builder
             "admin-popup" => true,
         ];
 
-        if (!\is_string($pageLayout) || !isset($knownLayouts[$pageLayout])) {
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $request       = $objectManager->create('\Magento\Framework\App\RequestInterface');
-            if (strpos($request->getRequestUri(), 'customer/section/load') === false) {
-                try {
-                    throw new \Exception('Not known layout DEBUG');
-                } catch (\Exception $e) {
-                    $logger        = $objectManager->create('\Psr\Log\LoggerInterface');
-                    $log = "PageLayout: " . var_export($pageLayout, true) . "\n" .
-                        "Request Uri: " . $request->getRequestUri() . "\n" .
-                        "SERVER: " . var_export($_SERVER, true) . "\n" .
-                        "Stack trace: " . $e->getTraceAsString();
+        try {
+            if (!\is_string($pageLayout) || !isset($knownLayouts[$pageLayout])) {
+                $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                $request       = $objectManager->create('\Magento\Framework\App\RequestInterface');
+                if (strpos($request->getRequestUri(), 'customer/section/load') === false) {
+                    try {
+                        throw new \Exception('Not known layout DEBUG');
+                    } catch (\Exception $e) {
+                        $logger        = $objectManager->create('\Psr\Log\LoggerInterface');
+                        $log = "PageLayout: " . var_export($pageLayout, true) . "\n" .
+                            "Request Uri: " . $request->getRequestUri() . "\n" .
+                            "SERVER: " . var_export($_SERVER, true) . "\n" .
+                            "Stack trace: " . $e->getTraceAsString();
 
-                    $logger->warning($e->getMessage() . ": \n" . $log);
+                        $logger->warning($e->getMessage() . ": \n" . $log);
+                    }
                 }
             }
-        }
+        } catch (\Throwable $e) {}
 
         if ($pageLayout) {
             $readerContext = $this->layout->getReaderContext();
