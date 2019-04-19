@@ -62,6 +62,46 @@ class Builder extends View\Layout\Builder
     protected function readPageLayout()
     {
         $pageLayout = $this->getPageLayout();
+
+        $knownLayouts = [
+            //default frontend
+            "1column" => true,
+            "2columns-left" => true,
+            "2columns-right" => true,
+            "3columns" => true,
+            "empty" => true,
+            //additional
+            "checkout" => true,
+            "robots" => true,
+            //admin
+            "admin-1column" => true,
+            "admin-2columns-left" => true,
+            "admin-empty" => true,
+            "admin-login" => true,
+            "admin-popup" => true,
+        ];
+
+        if (!\is_string($pageLayout) || !isset($knownLayouts[$pageLayout])) {
+            try {
+                throw new \Exception('Not known layout DEBUG');
+            } catch (\Exception $e) {
+                $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                $logger        = $objectManager->create('\Psr\Log\LoggerInterface');
+                $request       = $objectManager->create('\Magento\Framework\App\RequestInterface');
+
+                $log = "PageLayout: " . var_export($pageLayout, true) . "\n" .
+                    "Request Uri: " . $request->getRequestUri() . "\n" .
+                    "SERVER: " . var_export($_SERVER, true) . "\n" .
+                    "Stack trace: " . $e->getTraceAsString();
+
+                // log OMG!!!
+                // log value of $pageLayout via var_export
+                // log URL and all headers
+                // log stack trace
+                $logger->warning($e->getMessage() . ": \n" . $log);
+            }
+        }
+
         if ($pageLayout) {
             $readerContext = $this->layout->getReaderContext();
             $this->pageLayoutReader->read($readerContext, $pageLayout);
