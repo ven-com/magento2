@@ -82,23 +82,20 @@ class Builder extends View\Layout\Builder
         ];
 
         if (!\is_string($pageLayout) || !isset($knownLayouts[$pageLayout])) {
-            try {
-                throw new \Exception('Not known layout DEBUG');
-            } catch (\Exception $e) {
-                $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-                $logger        = $objectManager->create('\Psr\Log\LoggerInterface');
-                $request       = $objectManager->create('\Magento\Framework\App\RequestInterface');
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $request       = $objectManager->create('\Magento\Framework\App\RequestInterface');
+            if (strpos($request->getRequestUri(), 'customer/section/load') === false) {
+                try {
+                    throw new \Exception('Not known layout DEBUG');
+                } catch (\Exception $e) {
+                    $logger        = $objectManager->create('\Psr\Log\LoggerInterface');
+                    $log = "PageLayout: " . var_export($pageLayout, true) . "\n" .
+                        "Request Uri: " . $request->getRequestUri() . "\n" .
+                        "SERVER: " . var_export($_SERVER, true) . "\n" .
+                        "Stack trace: " . $e->getTraceAsString();
 
-                $log = "PageLayout: " . var_export($pageLayout, true) . "\n" .
-                    "Request Uri: " . $request->getRequestUri() . "\n" .
-                    "SERVER: " . var_export($_SERVER, true) . "\n" .
-                    "Stack trace: " . $e->getTraceAsString();
-
-                // log OMG!!!
-                // log value of $pageLayout via var_export
-                // log URL and all headers
-                // log stack trace
-                $logger->warning($e->getMessage() . ": \n" . $log);
+                    $logger->warning($e->getMessage() . ": \n" . $log);
+                }
             }
         }
 
