@@ -329,6 +329,34 @@ class Layout extends \Magento\Framework\Simplexml\Config implements \Magento\Fra
                 'pageConfigStructure' => $this->getReaderContext()->getPageConfigStructure()->__toArray(),
                 'scheduledStructure'  => $this->getReaderContext()->getScheduledStructure()->__toArray(),
             ];
+
+            // DEBUG: Try to catch stacktrace and additional information about cached layout structure without <root> element
+            try {
+                $debugHandlesArray     = $this->getUpdate()->getHandles();
+                $debugHandlesHashset   = array_flip($debugHandlesArray);
+                $debugMandatoryElement = "root"; // we have a bug that sometimes root is absent
+
+                if (
+                    isset($debugHandlesHashset["catalog_product_view"]) ||
+                    isset($debugHandlesHashset["catalog_category_view"]) ||
+                    strpos($_SERVER["SCRIPT_URI"], 'page_cache/block/esi/blocks/["catalog.topnav"]') !== false
+                ) {
+
+                    if (!array_key_exists($debugMandatoryElement, $data["scheduledStructure"]["scheduledStructure"])) {
+                        $debugMessage = "DEBUG: Trial to save STRUCTURE LAYOUT cache item without element '$debugMandatoryElement'\n" .
+                            "Uri: " . $_SERVER["SCRIPT_URI"] . "\n" .
+                            "Layout handles: " . json_encode($debugHandlesArray) . "\n" .
+                            "Cache key: " . strtoupper($cacheId) . "\n" .
+                            "Cache data: " . json_encode($data) . "\n" .
+                            "Stack trace:\n" . json_encode(debug_backtrace());
+
+                        $this->logger->error($debugMessage);
+                    }
+                }
+            } catch (\Throwable $e) {
+                $this->logger->error("Error in DEBUG logging section: " . $e);
+            }
+
             $this->cache->save($this->serializer->serialize($data), $cacheId, $this->getUpdate()->getHandles());
         }
 
