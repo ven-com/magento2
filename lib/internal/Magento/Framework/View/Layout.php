@@ -339,7 +339,7 @@ class Layout extends \Magento\Framework\Simplexml\Config implements \Magento\Fra
                 if (
                     isset($debugHandlesHashset["catalog_product_view"]) ||
                     isset($debugHandlesHashset["catalog_category_view"]) ||
-                    strpos($_SERVER["SCRIPT_URI"], 'page_cache/block/esi/blocks/["catalog.topnav"]') !== false
+                    (isset($_SERVER["SCRIPT_URI"]) && strpos($_SERVER["SCRIPT_URI"], 'page_cache/block/esi/blocks/["catalog.topnav"]') !== false)
                 ) {
 
                     if (!array_key_exists($debugMandatoryElement, $data["scheduledStructure"]["scheduledStructure"])) {
