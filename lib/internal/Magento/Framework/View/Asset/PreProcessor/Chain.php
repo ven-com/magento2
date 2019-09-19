@@ -63,6 +63,13 @@ class Chain
     protected $origAssetPath;
 
     /**
+     * Variable with absolute path to file with pre-cached result of chain processing.
+     *
+     * @var string
+     */
+    protected $cachedResultPath;
+
+    /**
      * @param LocalInterface $asset
      * @param string $origContent
      * @param string $origContentType
@@ -114,6 +121,11 @@ class Chain
      */
     public function getContent()
     {
+        // return cached content if available
+        if (is_string($this->cachedResultPath) && is_readable($this->cachedResultPath)) {
+            return file_get_contents($this->cachedResultPath);
+        }
+
         return $this->content;
     }
 
@@ -125,7 +137,31 @@ class Chain
      */
     public function setContent($content)
     {
+        $this->cachedResultPath = null;
         $this->content = $content;
+    }
+
+    /**
+     * Set cached result file path
+     *
+     * @param string $filePath
+     * @return void
+     */
+    public function setCachedResultPath($filePath)
+    {
+        $this->cachedResultPath = $filePath;
+        $this->content = null;
+    }
+
+    /**
+     * Get cached result file path
+     *
+     * @param string $filePath
+     * @return void
+     */
+    public function getCachedResultPath()
+    {
+        return $this->cachedResultPath;
     }
 
     /**
@@ -156,6 +192,7 @@ class Chain
      */
     public function setContentType($contentType)
     {
+        $this->cachedResultPath = null;
         $this->contentType = $contentType;
     }
 
@@ -204,7 +241,19 @@ class Chain
      */
     public function isChanged()
     {
-        return $this->origContentType != $this->contentType || $this->origContent != $this->content;
+        return $this->origContentType != $this->contentType
+            || $this->origContent != $this->content
+            || $this->isCached();
+    }
+
+    /**
+     * Whether result is already cached as file
+     *
+     * @return bool
+     */
+    public function isCached()
+    {
+        return is_string($this->cachedResultPath) && is_readable($this->cachedResultPath);
     }
 
     /**

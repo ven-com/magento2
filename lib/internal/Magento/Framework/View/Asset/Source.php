@@ -152,9 +152,15 @@ class Source
         $this->preProcessorPool->process($chain);
         $chain->assertValid();
         if ($chain->isChanged()) {
-            $dir = $this->tmpDir->getAbsolutePath();
-            $path = $chain->getTargetAssetPath();
-            $this->tmpDir->writeFile($path, $chain->getContent());
+            if ($chain->isCached()) {
+                $cacheFile = $chain->getCachedResultPath();
+                $path = basename($cacheFile);
+                $dir = dirname($cacheFile);
+            } else {
+                $dir  = $this->tmpDir->getAbsolutePath();
+                $path = $chain->getTargetAssetPath();
+                $this->tmpDir->writeFile($path, $chain->getContent());
+            }
         }
         if (empty($path)) {
             $result = false;

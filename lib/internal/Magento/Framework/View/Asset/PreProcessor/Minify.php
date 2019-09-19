@@ -5,6 +5,7 @@
  */
 namespace Magento\Framework\View\Asset\PreProcessor;
 
+use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Code\Minifier\AdapterInterface;
 use Magento\Framework\View\Asset\Minification;
 use Magento\Framework\View\Asset\PreProcessor;
@@ -26,13 +27,21 @@ class Minify implements PreProcessorInterface
     protected $minification;
 
     /**
+     * @var \Magento\Framework\Filesystem\Directory\WriteInterface
+     */
+    protected $tmpDir;
+
+    /**
      * @param AdapterInterface $adapter
      * @param Minification $minification
      */
-    public function __construct(AdapterInterface $adapter, Minification $minification)
+    public function __construct(AdapterInterface $adapter,
+                                Minification $minification,
+                                \Magento\Framework\Filesystem $filesystem)
     {
         $this->adapter = $adapter;
         $this->minification = $minification;
+        $this->tmpDir = $filesystem->getDirectoryWrite(DirectoryList::TMP_MATERIALIZATION_DIR);
     }
 
     /**
@@ -47,8 +56,28 @@ class Minify implements PreProcessorInterface
             $this->minification->isMinifiedFilename($chain->getTargetAssetPath()) &&
             !$this->minification->isMinifiedFilename($chain->getOrigAssetPath())
         ) {
-            $content = $this->adapter->minify($chain->getContent());
-            $chain->setContent($content);
+            // format cache file path based on original file name and it's modification time
+            $cacheKeyData = [
+                $chain->getOrigAssetPath(),
+                filemtime($chain->getOrigAssetPath())
+            ];
+            $cacheFile = "_minify_cache/" . $chain->getOrigContentType() . "/"
+                . md5(join($cacheKeyData)) . "." . $chain->getOrigContentType();
+
+            // if content was not processed by pre-processors yet (this is 1st preprocessor in chain)
+            // then create cachable result as a file or re-use existing one
+            if (!$chain->isChanged()) {
+                if (!is_readable($cacheFile)) {
+                    $content = $this->adapter->minify($chain->getContent());
+                    $this->tmpDir->writeFile($cacheFile, $content);
+                }
+                $chain->setCachedResultPath($this->tmpDir->getAbsolutePath($cacheFile));
+            } else {
+                // if asset content has been modified by other preprocessor
+                // then process it without caching
+                $content = $this->adapter->minify($chain->getContent());
+                $chain->setContent($content);
+            }
         }
     }
 }
