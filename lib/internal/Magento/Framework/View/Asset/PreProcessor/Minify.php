@@ -27,9 +27,11 @@ class Minify implements PreProcessorInterface
     protected $minification;
 
     /**
+     * JS/CSS minification cache folder
+     *
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
      */
-    protected $tmpDir;
+    protected $cacheDir;
 
     /**
      * @param AdapterInterface $adapter
@@ -41,7 +43,7 @@ class Minify implements PreProcessorInterface
     {
         $this->adapter = $adapter;
         $this->minification = $minification;
-        $this->tmpDir = $filesystem->getDirectoryWrite(DirectoryList::TMP_MATERIALIZATION_DIR);
+        $this->cacheDir = $filesystem->getDirectoryWrite(DirectoryList::TMP_MATERIALIZATION_DIR);
     }
 
     /**
@@ -67,11 +69,11 @@ class Minify implements PreProcessorInterface
             // if content was not processed by pre-processors yet (this is 1st preprocessor in chain)
             // then create cachable result as a file or re-use existing one
             if (!$chain->isChanged()) {
-                if (!is_readable($cacheFile)) {
+                if (!is_readable($this->cacheDir->getAbsolutePath($cacheFile))) {
                     $content = $this->adapter->minify($chain->getContent());
-                    $this->tmpDir->writeFile($cacheFile, $content);
+                    $this->cacheDir->writeFile($cacheFile, $content);
                 }
-                $chain->setCachedResultPath($this->tmpDir->getAbsolutePath($cacheFile));
+                $chain->setCachedResultPath($this->cacheDir->getAbsolutePath($cacheFile));
             } else {
                 // if asset content has been modified by other preprocessor
                 // then process it without caching
