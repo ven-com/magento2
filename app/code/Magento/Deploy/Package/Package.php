@@ -438,12 +438,13 @@ class Package
         $files = [];
         foreach ($this->getParentPackages() as $parentPackage) {
             if ($type === null) {
-                $files = array_merge($files, $parentPackage->getFiles());
+                $files[] = $parentPackage->getFiles();
             } else {
-                $files = array_merge($files, $parentPackage->getFilesByType($type));
+                $files[] = $parentPackage->getFilesByType($type);
             }
         }
-        return $files;
+
+        return array_merge(...$files);
     }
 
     /**
