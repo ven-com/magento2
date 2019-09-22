@@ -168,4 +168,13 @@ class AlternativeSource implements AlternativeSourceInterface
     {
         return array_keys($this->alternatives);
     }
+
+    /**
+     * Check if file extention supported
+     * @return bool
+     */
+    public function isExtensionSupported($ext)
+    {
+        return isset($this->alternatives[$ext]);
+    }
 }
