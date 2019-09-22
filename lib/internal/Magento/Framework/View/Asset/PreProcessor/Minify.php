@@ -43,7 +43,7 @@ class Minify implements PreProcessorInterface
     {
         $this->adapter = $adapter;
         $this->minification = $minification;
-        $this->cacheDir = $filesystem->getDirectoryWrite(DirectoryList::TMP_MATERIALIZATION_DIR);
+        $this->cacheDir = $filesystem->getDirectoryWrite(DirectoryList::VAR_DIR);
     }
 
     /**
@@ -63,7 +63,7 @@ class Minify implements PreProcessorInterface
                 $chain->getOrigAssetPath(),
                 filemtime($chain->getOrigAssetPath())
             ];
-            $cacheFile = "_minify_cache/" . $chain->getOrigContentType() . "/"
+            $cacheFile = "minify_cache/" . $chain->getOrigContentType() . "/"
                 . md5(join($cacheKeyData)) . "." . $chain->getOrigContentType();
 
             // if content was not processed by pre-processors yet (this is 1st preprocessor in chain)
