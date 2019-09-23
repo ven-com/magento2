@@ -444,7 +444,11 @@ class Package
             }
         }
 
-        return array_merge(...$files);
+        if (count($files) > 0) {
+            return array_merge(...$files);
+        } else {
+            return [];
+        }
     }
 
     /**
