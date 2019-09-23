@@ -56,6 +56,10 @@ class FileClassScanner
         return file_get_contents($this->filename);
     }
 
+    private $allowedOpenBraces = [T_CURLY_OPEN               => true,
+                                  T_DOLLAR_OPEN_CURLY_BRACES => true,
+                                  T_STRING_VARNAME           => true];
+
     /**
      * Extracts the fully qualified class name from a file.  It only searches for the first match and stops looking
      * as soon as it enters the class definition itself.
@@ -69,7 +73,6 @@ class FileClassScanner
      */
     private function extract()
     {
-        $allowedOpenBraces = array_flip([T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_STRING_VARNAME]);
         $classes = [];
         $namespace = '';
         $class = '';
@@ -81,7 +84,7 @@ class FileClassScanner
         $this->tokens = token_get_all($this->getFileContents());
         foreach ($this->tokens as $index => $token) {
             // Is either a literal brace or an interpolated brace with a variable
-            if ($token == '{' || (is_array($token) && isset($allowedOpenBraces[$token[0]]))) {
+            if ($token == '{' || (is_array($token) && isset($this->allowedOpenBraces[$token[0]]))) {
                 $braceLevel++;
             } else if ($token == '}') {
                 $braceLevel--;
