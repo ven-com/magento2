@@ -151,14 +151,9 @@ class Reader
      */
     private function fillThirdPartyInterfaces(ConfigInterface $config, DefinitionsCollection $definitionsCollection)
     {
-        $definedInstances = $definitionsCollection->getInstancesNamesList();
-
-        foreach (array_keys($config->getPreferences()) as $interface) {
-            if (in_array($interface, $definedInstances)) {
-                continue;
-            }
-
-            $definitionsCollection->addDefinition($interface, []);
-        }
+        $definedInstances = $definitionsCollection->getCollection();
+        $newInstances = array_fill_keys(array_keys($config->getPreferences()), []);
+        $newCollection = array_merge($newInstances, $definedInstances);
+        $definitionsCollection->initialize($newCollection);
     }
 }
