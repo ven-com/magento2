@@ -69,7 +69,7 @@ class FileClassScanner
      */
     private function extract()
     {
-        $allowedOpenBraces = [T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_STRING_VARNAME];
+        $allowedOpenBraces = array_flip([T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_STRING_VARNAME]);
         $classes = [];
         $namespace = '';
         $class = '';
@@ -81,7 +81,7 @@ class FileClassScanner
         $this->tokens = token_get_all($this->getFileContents());
         foreach ($this->tokens as $index => $token) {
             // Is either a literal brace or an interpolated brace with a variable
-            if ($token == '{' || (is_array($token) && in_array($token[0], $allowedOpenBraces))) {
+            if ($token == '{' || (is_array($token) && isset($allowedOpenBraces[$token[0]]))) {
                 $braceLevel++;
             } else if ($token == '}') {
                 $braceLevel--;
