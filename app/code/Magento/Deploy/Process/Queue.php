@@ -161,6 +161,7 @@ class Queue
     public function process()
     {
         $returnStatus = 0;
+        $logDelay = 10;
         $this->start = $this->lastJobStarted = time();
         $packages = $this->packages;
         while (count($packages) && $this->checkTimeout()) {
@@ -168,8 +169,13 @@ class Queue
                 $this->assertAndExecute($name, $packages, $packageJob);
             }
 
-            // refresh current status in console
-            $this->logger->info('.');
+            // refresh current status in console once in 10 iterations (once in 5 sec)
+            if ($logDelay >= 10) {
+                $this->logger->info('.');
+                $logDelay = 0;
+            } else {
+                $logDelay++;
+            }
 
             if ($this->isCanBeParalleled()) {
                 // in parallel mode sleep before trying to check status and run new jobs
@@ -253,6 +259,7 @@ class Queue
      */
     private function awaitForAllProcesses()
     {
+        $logDelay = 10;
         while ($this->inProgress && $this->checkTimeout()) {
             foreach ($this->inProgress as $name => $package) {
                 if ($this->isDeployed($package)) {
@@ -260,8 +267,13 @@ class Queue
                 }
             }
 
-            // refresh current status in console
-            $this->logger->info('.');
+            // refresh current status in console once in 10 iterations (once in 5 sec)
+            if ($logDelay >= 10) {
+                $this->logger->info('.');
+                $logDelay = 0;
+            } else {
+                $logDelay++;
+            }
 
             // sleep before checking parallel jobs status
             // phpcs:ignore Magento2.Functions.DiscouragedFunction
