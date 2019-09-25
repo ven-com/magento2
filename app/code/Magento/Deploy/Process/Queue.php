@@ -167,12 +167,19 @@ class Queue
             foreach ($packages as $name => $packageJob) {
                 $this->assertAndExecute($name, $packages, $packageJob);
             }
+
+            // refresh current status in console
             $this->logger->info('.');
-            // phpcs:ignore Magento2.Functions.DiscouragedFunction
-            sleep(3);
-            foreach ($this->inProgress as $name => $package) {
-                if ($this->isDeployed($package)) {
-                    unset($this->inProgress[$name]);
+
+            if ($this->isCanBeParalleled()) {
+                // in parallel mode sleep before trying to check status and run new jobs
+                // phpcs:ignore Magento2.Functions.DiscouragedFunction
+                usleep(500000); // 0.5 sec (less sleep == less time waste)
+
+                foreach ($this->inProgress as $name => $package) {
+                    if ($this->isDeployed($package)) {
+                        unset($this->inProgress[$name]);
+                    }
                 }
             }
         }
@@ -252,9 +259,13 @@ class Queue
                     unset($this->inProgress[$name]);
                 }
             }
+
+            // refresh current status in console
             $this->logger->info('.');
+
+            // sleep before checking parallel jobs status
             // phpcs:ignore Magento2.Functions.DiscouragedFunction
-            sleep(5);
+            usleep(500000); // 0.5 sec (less sleep == less time waste)
         }
         if ($this->isCanBeParalleled()) {
             // close connections only if ran with forks
