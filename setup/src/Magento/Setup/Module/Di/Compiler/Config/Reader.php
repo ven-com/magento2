@@ -113,11 +113,10 @@ class Reader
     {
         $constructors = [];
         $argumentsResolver = $this->argumentsResolverFactory->create($config);
-        foreach ($definitionsCollection->getInstancesNamesList() as $instanceType) {
+        foreach ($definitionsCollection->getCollection() as $instanceType => $constructor) {
             if (!$this->typeReader->isConcrete($instanceType)) {
                 continue;
             }
-            $constructor = $definitionsCollection->getInstanceArguments($instanceType);
             $constructors[$instanceType] = $argumentsResolver->getResolvedConstructorArguments(
                 $instanceType,
                 $constructor
