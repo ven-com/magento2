@@ -131,6 +131,12 @@ class FileClassScanner
         return $classes;
     }
 
+    private static $namespaceTokens = [
+        T_WHITESPACE => true,
+        T_STRING => true,
+        T_NS_SEPARATOR => true
+    ];
+
     /**
      * Looks forward from the current index to determine if the namespace is nested in {} or terminated with ;
      *
@@ -142,15 +148,15 @@ class FileClassScanner
         $len = count($this->tokens);
         while ($index++ < $len) {
             if (!is_array($this->tokens[$index])) {
-                if ($this->tokens[$index] == ';') {
+                if ($this->tokens[$index] === ';') {
                     return false;
-                } else if ($this->tokens[$index] == '{') {
+                } else if ($this->tokens[$index] === '{') {
                     return true;
                 }
                 continue;
             }
 
-            if (!in_array($this->tokens[$index][0], [T_WHITESPACE, T_STRING, T_NS_SEPARATOR])) {
+            if (!isset(self::$namespaceTokens[$this->tokens[$index][0]])) {
                 throw new InvalidFileException('Namespace not defined properly');
             }
         }
