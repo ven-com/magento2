@@ -12,9 +12,8 @@ class PreferencesResolving implements ModificationInterface
 {
     /**
      * Argument keys which require recursive resolving
-     * @var array
      */
-    private static $recursiveArgumentKeys = [
+    private const RECURSIVE_ARGUMENT_KEYS = [
         '_i_' => true, // shared instance of a class or interface
         '_ins_' => true // non-shared instance of a class or interface
     ];
@@ -49,7 +48,7 @@ class PreferencesResolving implements ModificationInterface
         }
 
         foreach ($argument as $key => &$value) {
-            if (isset(self::$recursiveArgumentKeys[$key])) {
+            if (isset(self::RECURSIVE_ARGUMENT_KEYS[$key])) {
                 $value = $this->resolvePreferenceRecursive($value, $preferences);
                 continue;
             }

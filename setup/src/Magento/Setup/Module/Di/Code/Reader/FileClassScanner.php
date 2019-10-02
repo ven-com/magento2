@@ -8,6 +8,12 @@ namespace Magento\Setup\Module\Di\Code\Reader;
 
 class FileClassScanner
 {
+    private const NAMESPACE_TOKENS = [
+        T_WHITESPACE => true,
+        T_STRING => true,
+        T_NS_SEPARATOR => true
+    ];
+
     /**
      * The filename of the file to introspect
      *
@@ -131,12 +137,6 @@ class FileClassScanner
         return $classes;
     }
 
-    private static $namespaceTokens = [
-        T_WHITESPACE => true,
-        T_STRING => true,
-        T_NS_SEPARATOR => true
-    ];
-
     /**
      * Looks forward from the current index to determine if the namespace is nested in {} or terminated with ;
      *
@@ -156,7 +156,7 @@ class FileClassScanner
                 continue;
             }
 
-            if (!isset(self::$namespaceTokens[$this->tokens[$index][0]])) {
+            if (!isset(self::NAMESPACE_TOKENS[$this->tokens[$index][0]])) {
                 throw new InvalidFileException('Namespace not defined properly');
             }
         }
