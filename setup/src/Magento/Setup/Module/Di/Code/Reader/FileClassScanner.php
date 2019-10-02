@@ -14,6 +14,11 @@ class FileClassScanner
         T_NS_SEPARATOR => true
     ];
 
+    private const ALLOWED_OPEN_BRACES_TOKENS = [
+        T_CURLY_OPEN               => true,
+        T_DOLLAR_OPEN_CURLY_BRACES => true,
+        T_STRING_VARNAME           => true];
+
     /**
      * The filename of the file to introspect
      *
@@ -62,10 +67,6 @@ class FileClassScanner
         return file_get_contents($this->filename);
     }
 
-    private $allowedOpenBraces = [T_CURLY_OPEN               => true,
-                                  T_DOLLAR_OPEN_CURLY_BRACES => true,
-                                  T_STRING_VARNAME           => true];
-
     /**
      * Extracts the fully qualified class name from a file.  It only searches for the first match and stops looking
      * as soon as it enters the class definition itself.
@@ -91,7 +92,7 @@ class FileClassScanner
         foreach ($this->tokens as $index => $token) {
             $tokenIsArray = is_array($token);
             // Is either a literal brace or an interpolated brace with a variable
-            if ($token === '{' || ($tokenIsArray && isset($this->allowedOpenBraces[$token[0]]))) {
+            if ($token === '{' || ($tokenIsArray && isset(self::ALLOWED_OPEN_BRACES_TOKENS[$token[0]]))) {
                 $braceLevel++;
             } else if ($token === '}') {
                 $braceLevel--;
@@ -101,10 +102,10 @@ class FileClassScanner
                 // A string ; or a discovered namespace that looks like "namespace name { }"
                 if (!$tokenIsArray || ($namespaceParts && $token[0] === T_WHITESPACE)) {
                     $triggerNamespace = false;
-                    $namespaceParts [] = '\\';
+                    $namespaceParts[] = '\\';
                     continue;
                 }
-                $namespaceParts [] = $token[1];
+                $namespaceParts[] = $token[1];
 
                 // The class keyword was found in the last loop
             } else if ($triggerClass && $token[0] === T_STRING) {
@@ -128,8 +129,8 @@ class FileClassScanner
             }
 
             // We have a class name, let's concatenate and store it!
-            if ($class != '') {
-                $fqClassName = trim(join("", $namespaceParts)) . trim($class);
+            if ($class !== '') {
+                $fqClassName = trim(join('', $namespaceParts)) . trim($class);
                 $classes[] = $fqClassName;
                 $class = '';
             }
