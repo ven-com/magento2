@@ -80,7 +80,7 @@ class FileClassScanner
     private function extract()
     {
         $classes = [];
-        $namespace = '';
+        $namespace = [];
         $class = '';
         $triggerClass = false;
         $triggerNamespace = false;
@@ -89,8 +89,9 @@ class FileClassScanner
 
         $this->tokens = token_get_all($this->getFileContents());
         foreach ($this->tokens as $index => $token) {
+            $tokenIsArray = is_array($token);
             // Is either a literal brace or an interpolated brace with a variable
-            if ($token === '{' || (is_array($token) && isset($this->allowedOpenBraces[$token[0]]))) {
+            if ($token === '{' || ($tokenIsArray && isset($this->allowedOpenBraces[$token[0]]))) {
                 $braceLevel++;
             } else if ($token === '}') {
                 $braceLevel--;
@@ -98,12 +99,12 @@ class FileClassScanner
             // The namespace keyword was found in the last loop
             if ($triggerNamespace) {
                 // A string ; or a discovered namespace that looks like "namespace name { }"
-                if (!is_array($token) || ($namespace && $token[0] === T_WHITESPACE)) {
+                if (!$tokenIsArray || ($namespace && $token[0] === T_WHITESPACE)) {
                     $triggerNamespace = false;
-                    $namespace .= '\\';
+                    $namespace [] = '\\';
                     continue;
                 }
-                $namespace .= $token[1];
+                $namespace [] = $token[1];
 
                 // The class keyword was found in the last loop
             } else if ($triggerClass && $token[0] === T_STRING) {
@@ -115,7 +116,7 @@ class FileClassScanner
                 case T_NAMESPACE:
                     // Current loop contains the namespace keyword.  Between this and the semicolon is the namespace
                     $triggerNamespace = true;
-                    $namespace = '';
+                    $namespace = [];
                     $bracedNamespace = $this->isBracedNamespace($index);
                     break;
                 case T_CLASS:
@@ -128,8 +129,7 @@ class FileClassScanner
 
             // We have a class name, let's concatenate and store it!
             if ($class != '') {
-                $namespace = trim($namespace);
-                $fqClassName = $namespace . trim($class);
+                $fqClassName = trim(join("", $namespace)) . trim($class);
                 $classes[] = $fqClassName;
                 $class = '';
             }
