@@ -90,15 +90,15 @@ class FileClassScanner
         $this->tokens = token_get_all($this->getFileContents());
         foreach ($this->tokens as $index => $token) {
             // Is either a literal brace or an interpolated brace with a variable
-            if ($token == '{' || (is_array($token) && isset($this->allowedOpenBraces[$token[0]]))) {
+            if ($token === '{' || (is_array($token) && isset($this->allowedOpenBraces[$token[0]]))) {
                 $braceLevel++;
-            } else if ($token == '}') {
+            } else if ($token === '}') {
                 $braceLevel--;
             }
             // The namespace keyword was found in the last loop
             if ($triggerNamespace) {
                 // A string ; or a discovered namespace that looks like "namespace name { }"
-                if (!is_array($token) || ($namespace && $token[0] == T_WHITESPACE)) {
+                if (!is_array($token) || ($namespace && $token[0] === T_WHITESPACE)) {
                     $triggerNamespace = false;
                     $namespace .= '\\';
                     continue;
@@ -106,7 +106,7 @@ class FileClassScanner
                 $namespace .= $token[1];
 
                 // The class keyword was found in the last loop
-            } else if ($triggerClass && $token[0] == T_STRING) {
+            } else if ($triggerClass && $token[0] === T_STRING) {
                 $triggerClass = false;
                 $class = $token[1];
             }
