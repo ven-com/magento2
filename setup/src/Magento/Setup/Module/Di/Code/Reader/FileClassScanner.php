@@ -80,7 +80,7 @@ class FileClassScanner
     private function extract()
     {
         $classes = [];
-        $namespace = [];
+        $namespaceParts = [];
         $class = '';
         $triggerClass = false;
         $triggerNamespace = false;
@@ -99,12 +99,12 @@ class FileClassScanner
             // The namespace keyword was found in the last loop
             if ($triggerNamespace) {
                 // A string ; or a discovered namespace that looks like "namespace name { }"
-                if (!$tokenIsArray || ($namespace && $token[0] === T_WHITESPACE)) {
+                if (!$tokenIsArray || ($namespaceParts && $token[0] === T_WHITESPACE)) {
                     $triggerNamespace = false;
-                    $namespace [] = '\\';
+                    $namespaceParts [] = '\\';
                     continue;
                 }
-                $namespace [] = $token[1];
+                $namespaceParts [] = $token[1];
 
                 // The class keyword was found in the last loop
             } else if ($triggerClass && $token[0] === T_STRING) {
@@ -116,7 +116,7 @@ class FileClassScanner
                 case T_NAMESPACE:
                     // Current loop contains the namespace keyword.  Between this and the semicolon is the namespace
                     $triggerNamespace = true;
-                    $namespace = [];
+                    $namespaceParts = [];
                     $bracedNamespace = $this->isBracedNamespace($index);
                     break;
                 case T_CLASS:
@@ -129,7 +129,7 @@ class FileClassScanner
 
             // We have a class name, let's concatenate and store it!
             if ($class != '') {
-                $fqClassName = trim(join("", $namespace)) . trim($class);
+                $fqClassName = trim(join("", $namespaceParts)) . trim($class);
                 $classes[] = $fqClassName;
                 $class = '';
             }
