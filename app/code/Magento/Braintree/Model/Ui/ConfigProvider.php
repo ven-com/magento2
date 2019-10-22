@@ -10,6 +10,7 @@ use Magento\Braintree\Gateway\Request\PaymentDataBuilder;
 use Magento\Braintree\Model\Adapter\BraintreeAdapterFactory;
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\Session\SessionManagerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class ConfigProvider
@@ -40,6 +41,9 @@ class ConfigProvider implements ConfigProviderInterface
      */
     private $session;
 
+    /** @var LoggerInterface */
+    private $logger;
+
     /**
      * Constructor
      *
@@ -50,11 +54,13 @@ class ConfigProvider implements ConfigProviderInterface
     public function __construct(
         Config $config,
         BraintreeAdapterFactory $adapterFactory,
-        SessionManagerInterface $session
+        SessionManagerInterface $session,
+        LoggerInterface $logger
     ) {
         $this->config = $config;
         $this->adapterFactory = $adapterFactory;
         $this->session = $session;
+        $this->logger = $logger;
     }
 
     /**
@@ -105,8 +111,31 @@ class ConfigProvider implements ConfigProviderInterface
                 $params[PaymentDataBuilder::MERCHANT_ACCOUNT_ID] = $merchantAccountId;
             }
 
+
+            $t = microtime(true);
+
             $this->clientToken = $this->adapterFactory->create($storeId)
                 ->generate($params);
+
+            try {
+                $t = microtime(true) - $t;
+
+                $data = [
+                    'time' => $t,
+                    'params' => json_encode($params),
+                    'token' => $this->clientToken
+                ];
+                $this->logger->info(
+                    "DEBUG Braintree received new token: " . json_encode($data),
+                    ['module' => 'Ven_Debug']
+                );
+
+            } catch (\Throwable $e) {
+                $this->logger->info(
+                    "DEBUG Braintree debug log exception: " . $e->getMessage(),
+                    ['module' => 'Ven_Debug']
+                );
+            }
         }
 
         return $this->clientToken;
