@@ -65,11 +65,12 @@ class ConfigProvider implements ConfigProviderInterface
     public function getConfig()
     {
         $storeId = $this->session->getStoreId();
+        $isActive = $this->config->isActive($storeId);
         return [
             'payment' => [
                 self::CODE => [
-                    'isActive' => $this->config->isActive($storeId),
-                    'clientToken' => $this->getClientToken(),
+                    'isActive' => $isActive,
+                    'clientToken' => $isActive ? $this->getClientToken() : null,
                     'ccTypesMapper' => $this->config->getCcTypesMapper(),
                     'sdkUrl' => $this->config->getSdkUrl(),
                     'countrySpecificCardTypes' => $this->config->getCountrySpecificCardTypeConfig($storeId),
