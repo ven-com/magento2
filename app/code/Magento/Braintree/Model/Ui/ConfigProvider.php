@@ -66,11 +66,23 @@ class ConfigProvider implements ConfigProviderInterface
     {
         $storeId = $this->session->getStoreId();
         $isActive = $this->config->isActive($storeId);
+        $clientToken = null;
+
+        if ($isActive) {
+            // yes, this is dirty hack...
+            if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/checkout/cart') === 0) {
+                // prevent Braintre Client Token generation on shopping cart page (save ~230ms, token isn't used)
+                // token generation makes curl request to external server - this is why it is slow
+            } else {
+                $clientToken = $this->getClientToken();
+            }
+        }
+
         return [
             'payment' => [
                 self::CODE => [
                     'isActive' => $isActive,
-                    'clientToken' => $isActive ? $this->getClientToken() : null,
+                    'clientToken' => $clientToken,
                     'ccTypesMapper' => $this->config->getCcTypesMapper(),
                     'sdkUrl' => $this->config->getSdkUrl(),
                     'countrySpecificCardTypes' => $this->config->getCountrySpecificCardTypeConfig($storeId),
