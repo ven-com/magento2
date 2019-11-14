@@ -640,13 +640,15 @@ define([
         _displayRegularPriceBlock: function (optionId) {
             var shouldBeShown = true;
 
+            /** Commented by VEN to fix issue with auto-hide special price on product page
+             * of configurable products - DM-852
             _.each(this.options.settings, function (element) {
                 if (element.value === '') {
                     shouldBeShown = false;
                 }
-            });
+            });*/
 
-            if (shouldBeShown &&
+            if (!optionId || shouldBeShown &&
                 this.options.spConfig.optionPrices[optionId].oldPrice.amount !==
                 this.options.spConfig.optionPrices[optionId].finalPrice.amount
             ) {
